@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Estimations</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Chalkboard', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --chalkboard: #2a5934;
+            --chalk: #f0f0f0;
+            --cardboard: #d7b899;
+            --cardboard-edge: #b89454;
+            --correct: #4CAF50;
+            --incorrect: #f44336;
+            --primary: #2196F3;
+            --highlight: #FF9800;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a472a 0%, #2a5934 100%);
+            color: var(--chalk);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+            padding: 15px;
+            border-bottom: 3px dashed var(--chalk);
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
+            color: var(--chalk);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 25px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid var(--chalk);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--highlight);
+            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .cardboards-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 40px;
+            width: 100%;
+        }
+
+        .cardboard {
+            background-color: var(--cardboard);
+            border: 15px solid var(--cardboard-edge);
+            border-radius: 8px;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cardboard::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+        }
+
+        .cardboard:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .cardboard:active {
+            transform: translateY(-5px);
+        }
+
+        .cardboard.correct {
+            border-color: var(--correct);
+            box-shadow: 0 0 25px rgba(76, 175, 80, 0.7);
+        }
+
+        .cardboard.incorrect {
+            border-color: var(--incorrect);
+            box-shadow: 0 0 25px rgba(244, 67, 54, 0.7);
+        }
+
+        .math-expression {
+            font-size: 4.5rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.8);
+        }
+
+        .equal-btn-container {
+            margin: 20px 0 40px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .equal-btn {
+            background: linear-gradient(to bottom, #8B4513, #A0522D);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .equal-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .equal-btn:active {
+            transform: scale(0.98);
+        }
+
+        .difficulty-info {
+            text-align: center;
+            font-size: 1.4rem;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .operation-badges {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: var(--primary);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .badge.active {
+            background: var(--highlight);
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.7);
+        }
+
+        .instructions {
+            text-align: center;
+            font-size: 1.2rem;
+            margin: 25px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            width: 100%;
+            max-width: 700px;
+            line-height: 1.5;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 1.1rem;
+            padding: 20px;
+            border-top: 2px dashed var(--chalk);
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .sound-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pwa-install {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .winning-streak {
+            font-size: 1.5rem;
+            color: var(--highlight);
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .cardboard {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .math-expression {
+                font-size: 3.5rem;
+            }
+            
+            .cardboards-container {
+                gap: 15px;
+            }
+            
+            .equal-btn {
+                width: 100px;
+                height: 100px;
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .cardboard {
+                width: 90%;
+                height: 220px;
+            }
+            
+            .cardboards-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .stat-value {
+                font-size: 2rem;
+            }
+        }
+
+        /* PWA specific styles */
+        @media (display-mode: standalone) {
+            body {
+                padding-top: 40px; /* Add padding for status bar */
+            }
+            
+            .pwa-install {
+                display: none !important; /* Hide install button in standalone mode */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Math Estimations</h1>
+        <div class="subtitle">Tap the cardboard with the higher value. Three wins increase difficulty!</div>
+    </div>
+
+    <div class="game-stats">
+        <div class="stat">
+            <div class="stat-value" id="score">0</div>
+            <div class="stat-label">Score</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="streak">0</div>
+            <div class="stat-label">Winning Streak</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="difficulty">1</div>
+            <div class="stat-label">Difficulty</div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="difficulty-info">
+            <div>Current Operations:</div>
+            <div class="operation-badges" id="operation-badges">
+                <div class="badge active" id="addition-badge">Addition</div>
+                <div class="badge" id="subtraction-badge">Subtraction</div>
+                <div class="badge" id="multiplication-badge">Multiplication</div>
+                <div class="badge" id="division-badge">Division</div>
+            </div>
+            <div class="winning-streak" id="streak-message"></div>
+        </div>
+
+        <div class="cardboards-container">
+            <div class="cardboard" id="cardboard1">
+                <div class="math-expression" id="expression1">5 + 3</div>
+            </div>
+            <div class="cardboard" id="cardboard2">
+                <div class="math-expression" id="expression2">4 + 6</div>
+            </div>
+        </div>
+
+        <div class="equal-btn-container">
+            <button class="equal-btn" id="equal-btn">=</button>
+        </div>
+
+        <div class="instructions">
+            <p><i class="fas fa-hand-point-up"></i> Tap the cardboard with the <strong>higher value</strong>.</p>
+            <p><i class="fas fa-equals"></i> If both values are equal, tap the <strong>= button</strong>.</p>
+            <p><i class="fas fa-trophy"></i> After 3 consecutive wins, the difficulty increases with new operations!</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Made by Olayinka PWA 2026</p>
+    </div>
+
+    <button class="sound-toggle" id="sound-toggle">
+        <i class="fas fa-volume-up"></i>
+    </button>
+
+    <button class="pwa-install" id="pwa-install">
+        <i class="fas fa-download"></i> Install App
+    </button>
+
+    <!-- Audio elements for sound effects -->
+    <audio id="correct-sound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="incorrect-sound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="level-up-sound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Game state
+        let score = 0;
+        let winningStreak = 0;
+        let difficulty = 1;
+        let soundEnabled = true;
+        let currentOperations = ['addition'];
+        let deferredPrompt = null;
+
+        // DOM elements
+        const scoreElement = document.getElementById('score');
+        const streakElement = document.getElementById('streak');
+        const difficultyElement = document.getElementById('difficulty');
+        const cardboard1 = document.getElementById('cardboard1');
+        const cardboard2 = document.getElementById('cardboard2');
+        const expression1 = document.getElementById('expression1');
+        const expression2 = document.getElementById('expression2');
+        const equalBtn = document.getElementById('equal-btn');
+        const soundToggle = document.getElementById('sound-toggle');
+        const pwaInstallBtn = document.getElementById('pwa-install');
+        const streakMessage = document.getElementById('streak-message');
+        
+        // Audio elements
+        const correctSound = document.getElementById('correct-sound');
+        const incorrectSound = document.getElementById('incorrect-sound');
+        const levelUpSound = document.getElementById('level-up-sound');
+
+        // Operation badges
+        const additionBadge = document.getElementById('addition-badge');
+        const subtractionBadge = document.getElementById('subtraction-badge');
+        const multiplicationBadge = document.getElementById('multiplication-badge');
+        const divisionBadge = document.getElementById('division-badge');
+
+        // Generate a random integer between min and max (inclusive)
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // Generate a math expression based on current operations
+        function generateMathExpression() {
+            let expression;
+            let value;
+            const operation = currentOperations[getRandomInt(0, currentOperations.length - 1)];
+            
+            switch(operation) {
+                case 'addition':
+                    const add1 = getRandomInt(1, 20 * difficulty);
+                    const add2 = getRandomInt(1, 20 * difficulty);
+                    expression = `${add1} + ${add2}`;
+                    value = add1 + add2;
+                    break;
+                    
+                case 'subtraction':
+                    let sub1 = getRandomInt(10, 30 * difficulty);
+                    let sub2 = getRandomInt(1, sub1 - 1);
+                    // Ensure no negative results
+                    if (sub1 < sub2) [sub1, sub2] = [sub2, sub1];
+                    expression = `${sub1} - ${sub2}`;
+                    value = sub1 - sub2;
+                    break;
+                    
+                case 'multiplication':
+                    const mult1 = getRandomInt(1, 10 * difficulty);
+                    const mult2 = getRandomInt(1, 10);
+                    expression = `${mult1} × ${mult2}`;
+                    value = mult1 * mult2;
+                    break;
+                    
+                case 'division':
+                    // Ensure integer division
+                    const divisor = getRandomInt(2, 10);
+                    const quotient = getRandomInt(2, 10 * difficulty);
+                    const dividend = divisor * quotient;
+                    expression = `${dividend} ÷ ${divisor}`;
+                    value = quotient;
+                    break;
+                    
+                default:
+                    // Fallback to addition
+                    const a = getRandomInt(1, 20);
+                    const b = getRandomInt(1, 20);
+                    expression = `${a} + ${b}`;
+                    value = a + b;
+            }
+            
+            return { expression, value };
+        }
+
+        // Generate two different math expressions
+        function generateNewChallenge() {
+            let expr1, expr2;
+            
+            do {
+                expr1 = generateMathExpression();
+                expr2 = generateMathExpression();
+            } while (expr1.value === expr2.value); // Ensure different values
+            
+            expression1.textContent = expr1.expression;
+            expression2.textContent = expr2.expression;
+            
+            // Store values as data attributes
+            cardboard1.dataset.value = expr1.value;
+            cardboard2.dataset.value = expr2.value;
+            
+            // Reset card styles
+            cardboard1.classList.remove('correct', 'incorrect');
+            cardboard2.classList.remove('correct', 'incorrect');
+            
+            // Update streak message
+            updateStreakMessage();
+        }
+
+        // Check the answer
+        function checkAnswer(selectedValue, otherValue, selectedCardboard, otherCardboard) {
+            const correct = parseInt(selectedValue) > parseInt(otherValue);
+            
+            if (correct) {
+                // Correct answer
+                selectedCardboard.classList.add('correct');
+                otherCardboard.classList.add('incorrect');
+                
+                score += 10 * difficulty;
+                winningStreak++;
+                
+                if (soundEnabled) {
+                    correctSound.currentTime = 0;
+                    correctSound.play();
+                }
+                
+                // Check for level up
+                if (winningStreak >= 3 && difficulty < 4) {
+                    levelUp();
+                }
+                
+                // Generate new challenge after a delay
+                setTimeout(generateNewChallenge, 1200);
+            } else {
+                // Incorrect answer
+                selectedCardboard.classList.add('incorrect');
+                otherCardboard.classList.add('correct');
+                
+                winningStreak = 0;
+                
+                if (soundEnabled) {
+                    incorrectSound.currentTime = 0;
+                    incorrectSound.play();
+                }
+                
+                // Generate new challenge after a delay
+                setTimeout(generateNewChallenge, 1200);
+            }
+            
+            updateUI();
+        }
+
+        // Handle equal values
+        function handleEqual() {
+            const value1 = parseInt(cardboard1.dataset.value);
+            const value2 = parseInt(cardboard2.dataset.value);
+            
+            if (value1 === value2) {
+                // Correct - both are equal
+                cardboard1.classList.add('correct');
+                cardboard2.classList.add('correct');
+                
+                score += 15 * difficulty;
+                winningStreak++;
+                
+                if (soundEnabled) {
+                    correctSound.currentTime = 0;
+                    correctSound.play();
+                }
+                
+                // Check for level up
+                if (winningStreak >= 3 && difficulty < 4) {
+                    levelUp();
+                }
+            } else {
+                // Incorrect - they're not equal
+                cardboard1.classList.add('incorrect');
+                cardboard2.classList.add('incorrect');
+                equalBtn.style.backgroundColor = 'var(--incorrect)';
+                
+                winningStreak = 0;
+                
+                if (soundEnabled) {
+                    incorrectSound.currentTime = 0;
+                    incorrectSound.play();
+                }
+                
+                // Reset equal button color after a delay
+                setTimeout(() => {
+                    equalBtn.style.backgroundColor = '';
+                }, 1000);
+            }
+            
+            // Generate new challenge after a delay
+            setTimeout(() => {
+                generateNewChallenge();
+                equalBtn.style.backgroundColor = '';
+            }, 1200);
+            
+            updateUI();
+        }
+
+        // Increase difficulty level
+        function levelUp() {
+            difficulty++;
+            
+            // Update operations based on difficulty
+            if (difficulty === 2) {
+                // Level 2: Addition and Subtraction
+                currentOperations = ['addition', 'subtraction'];
+                subtractionBadge.classList.add('active');
+            } else if (difficulty === 3) {
+                // Level 3: Addition, Subtraction, Multiplication
+                currentOperations = ['addition', 'subtraction', 'multiplication'];
+                multiplicationBadge.classList.add('active');
+            } else if (difficulty >= 4) {
+                // Level 4+: All operations mixed
+                currentOperations = ['addition', 'subtraction', 'multiplication', 'division'];
+                divisionBadge.classList.add('active');
+            }
+            
+            // Play level up sound
+            if (soundEnabled) {
+                levelUpSound.currentTime = 0;
+                levelUpSound.play();
+            }
+            
+            // Show level up message
+            streakMessage.textContent = `Level ${difficulty} unlocked! Operations: ${currentOperations.join(', ')}`;
+            
+            // Reset streak for next level
+            winningStreak = 0;
+        }
+
+        // Update UI elements
+        function updateUI() {
+            scoreElement.textContent = score;
+            streakElement.textContent = winningStreak;
+            difficultyElement.textContent = difficulty;
+        }
+
+        // Update streak message
+        function updateStreakMessage() {
+            if (winningStreak >= 2) {
+                streakMessage.textContent = `${3 - winningStreak} more win to level up!`;
+            } else {
+                streakMessage.textContent = "";
+            }
+        }
+
+        // Toggle sound
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = soundToggle.querySelector('i');
+            
+            if (soundEnabled) {
+                icon.className = 'fas fa-volume-up';
+                soundToggle.style.color = 'var(--highlight)';
+            } else {
+                icon.className = 'fas fa-volume-mute';
+                soundToggle.style.color = 'var(--chalk)';
+            }
+        }
+
+        // PWA Installation
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            // Show the install button
+            pwaInstallBtn.style.display = 'block';
+        });
+
+        // Install button click handler
+        pwaInstallBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            
+            // Show the install prompt
+            deferredPrompt.prompt();
+            
+            // Wait for the user to respond to the prompt
+            const { outcome } = await deferredPrompt.userChoice;
+            
+            if (outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+                pwaInstallBtn.style.display = 'none';
+            } else {
+                console.log('User dismissed the install prompt');
+            }
+            
+            // Clear the saved prompt since it can't be used again
+            deferredPrompt = null;
+        });
+
+        // Update UI when app is installed
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed');
+            pwaInstallBtn.style.display = 'none';
+            deferredPrompt = null;
+        });
+
+        // Initialize the game
+        function initGame() {
+            updateUI();
+            generateNewChallenge();
+            
+            // Add event listeners
+            cardboard1.addEventListener('click', () => {
+                checkAnswer(
+                    cardboard1.dataset.value, 
+                    cardboard2.dataset.value, 
+                    cardboard1, 
+                    cardboard2
+                );
+            });
+            
+            cardboard2.addEventListener('click', () => {
+                checkAnswer(
+                    cardboard2.dataset.value, 
+                    cardboard1.dataset.value, 
+                    cardboard2, 
+                    cardboard1
+                );
+            });
+            
+            equalBtn.addEventListener('click', handleEqual);
+            soundToggle.addEventListener('click', toggleSound);
+            
+            // Initialize badges
+            updateOperationBadges();
+        }
+
+        // Update operation badges visibility
+        function updateOperationBadges() {
+            additionBadge.classList.toggle('active', currentOperations.includes('addition'));
+            subtractionBadge.classList.toggle('active', currentOperations.includes('subtraction'));
+            multiplicationBadge.classList.toggle('active', currentOperations.includes('multiplication'));
+            divisionBadge.classList.toggle('active', currentOperations.includes('division'));
+        }
+
+        // Service Worker Registration for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }).catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+
+        // Start the game when the page loads
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+
+    <!-- Manifest for PWA -->
+    <script type="application/json" id="manifest">
+        {
+            "name": "Math Estimations",
+            "short_name": "MathEst",
+            "description": "A fun math estimation challenge game",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#2a5934",
+            "theme_color": "#2a5934",
+            "icons": [
+                {
+                    "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMjU2IDQ4QzE0MS4xIDQ4IDQ4IDE0MS4xIDQ4IDI1NnM5My4xIDIwOCAyMDggMjA4IDIwOC05My4xIDIwOC0yMDhTMzcwLjkgNDggMjU2IDQ4em0tMjQuNSA4Ni42YzI0LjMgMCA0NC4xIDE5LjcgNDQuMSA0NHMtMTkuNyA0NC00NCA0NGMtMjQuNCAwLTQ0LTE5LjctNDQtNDRzMTkuNi00NCA0NC00NHptMTg0IDI1My43YzAgNDkuNS00MC4xIDg5LjYtODkuNiA4OS42aC0xNDAuN2MtNDkuNSAwLTg5LjYtNDAuMS04OS42LTg5LjZTMTQxLjUgMjA4IDE5MSAyMDhoMTQwLjhjNDkuNSAwIDg5LjcgNDAuMSA4OS43IDg5LjN6bS02NS45LTE0MC42Yy0yNC4zIDAtNDQuMS0xOS43LTQ0LjEtNDRzMTkuNy00NCA0NC00NCA0NCAxOS43IDQ0IDQ0LTE5LjcgNDQtNDQgNDR6Ii8+PC9zdmc+",
+                    "sizes": "512x512",
+                    "type": "image/svg+xml"
+                }
+            ]
+        }
+    </script>
+
+    <!-- Service Worker Script -->
+    <script>
+        // Create a simple service worker script
+        const swScript = `
+            self.addEventListener('install', event => {
+                console.log('Service Worker installing.');
+                self.skipWaiting();
+            });
+
+            self.addEventListener('activate', event => {
+                console.log('Service Worker activating.');
+            });
+
+            self.addEventListener('fetch', event => {
+                // We don't cache anything for this simple example
+                // But in a real app, you would cache resources here
+            });
+        `;
+
+        // Create a blob URL for the service worker
+        const swBlob = new Blob([swScript], { type: 'application/javascript' });
+        const swURL = URL.createObjectURL(swBlob);
+
+        // Register the service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register(swURL)
+                    .then(registration => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
